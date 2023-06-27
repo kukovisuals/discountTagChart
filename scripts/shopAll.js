@@ -1,71 +1,84 @@
 // Define URL
-const url =
+const shopAll =
   "https://shop.join-eby.com/collections/seamless-underwear/products.json?limit=200";
+const bralettes =
+  "https://shop.join-eby.com/collections/bralettes-for-women/products.json?limit=200";
+const panties =
+  "https://shop.join-eby.com/collections/seamless-panties/products.json?limit=200";
+const newArrivals =
+  "https://shop.join-eby.com/collections/new-arrivals/products.json?limit=200";
 
-// Fetch data
-fetch(url)
-  .then((response) => response.json())
-  .then((data) => {
-    // Extract products array from data
-    let products = data.products;
+callShopityApi(shopAll, "#seamless-underwear");
+callShopityApi(bralettes, "#bralettes-for-women");
+callShopityApi(panties, "#seamless-panties");
+callShopityApi(newArrivals, "#new-arrivals");
 
-    // Clean products
-    let cleanedProducts = products.map((product) => {
-      return {
-        title: product.title,
-        handle: product.handle,
-        product_type: product.product_type,
-        tags: product.tags,
-      };
-    });
+function callShopityApi(url, div) {
+  // Fetch data
+  fetch(url)
+    .then((response) => response.json())
+    .then((data) => {
+      // Extract products array from data
+      let products = data.products;
 
-    // Log cleaned products
-    console.log(cleanedProducts);
-    draw(cleanedProducts);
-  })
-  .catch((error) => console.error("Error:", error));
+      // Clean products
+      let cleanedProducts = products.map((product) => {
+        return {
+          title: product.title,
+          handle: product.handle,
+          product_type: product.product_type,
+          tags: product.tags,
+        };
+      });
 
-function draw(products) {
+      // Log cleaned products
+      console.log(cleanedProducts);
+      draw(cleanedProducts, div);
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+function draw(products, divId) {
   // Define SVG dimensions and margins
   let margin = { top: 10, right: 30, bottom: 200, left: 250 },
     width = 1440 - margin.left - margin.right,
     height = 2500 - margin.top - margin.bottom;
 
-
-  const tagFilters = ['rebuyMatchColor','lightningDeal','julyfourthsale2023'];
+  const tagFilters = ["rebuyMatchColor", "lightningDeal", "julyfourthsale2023"];
   // Define scales
 
   const allTagsArr = Array.from(
-    new Set( products.flatMap((product) => product.tags)) )
-      .sort()
+    new Set(products.flatMap((product) => product.tags))
+  ).sort();
 
-  const filterTags = allTagsArr.filter(tags => {
-    return tagFilters.some( d => {
+  const filterTags = allTagsArr.filter((tags) => {
+    return tagFilters.some((d) => {
       return tags.includes(d);
     });
   });
-  let x = d3
-    .scalePoint()
-    .range([0, width])
-    .domain(filterTags)
-    .padding(0.5);
+  let x = d3.scalePoint().range([0, width]).domain(filterTags).padding(0.5);
 
   let y = d3
     .scalePoint()
     .range([height, 0])
-    .domain(products.map((product) => product.title)
-    )
+    .domain(products.map((product) => product.title))
     .padding(1.5);
 
   // Append SVG container
   let svg = d3
-    .select("#my_dataviz")
+    .select(divId)
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+  svg
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", 20) // Y position of text, change to fit your needs
+    .attr("text-anchor", "middle")
+    .style("font-size", "20px")
+    .text(divId);
   // Add X axis
   svg
     .append("g")
@@ -75,7 +88,7 @@ function draw(products) {
     .selectAll("text")
     .attr("transform", "translate(-10,0)rotate(-45)")
     .style("text-anchor", "end")
-    .style("font-size", "6px"); // set font size
+    .style("font-size", "12px"); // set font size
 
   // Add Y axis
   // Add Y axis
@@ -83,9 +96,9 @@ function draw(products) {
     .append("g")
     .call(d3.axisLeft(y).tickSize(-width).tickPadding(10))
     .selectAll("line")
-    .style("stroke", "gray"); // Set gridline color
+    .style("stroke", "gray") // Set gridline color
+    .style("font-size", "12px");
 
-  svg.selectAll("text").style("font-size", "12px"); // set font size
 
   // Extend Y axis
 
@@ -156,7 +169,7 @@ function draw(products) {
       if (d.x.includes("rebuyMatchColor")) {
         const newColor = d.y.split("-")[1];
 
-        return "green" //myColor(newColor);
+        return "green"; //myColor(newColor);
       }
       if (d.x.includes("lightningDeal")) {
         // console.log(d.x)
@@ -168,7 +181,7 @@ function draw(products) {
       }
     })
     .on("mouseover", function (event, d) {
-      console.log(d)
+      console.log(d);
       tooltip.transition().duration(200).style("opacity", 0.9);
       tooltip
         .html("Product: " + d.y + "</br>" + "</br>" + "Tag:" + d.x)
@@ -179,6 +192,6 @@ function draw(products) {
       tooltip.transition().duration(500).style("opacity", 0);
     });
 
-    console.log('--------------- products on summer sale -----------------');
-    console.log(JSON.stringify(productsDeal))
+  console.log("--------------- products on summer sale -----------------");
+  console.log(JSON.stringify(productsDeal));
 }
