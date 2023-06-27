@@ -27,18 +27,27 @@ fetch(url)
 
 function draw(products) {
   // Define SVG dimensions and margins
-  let margin = { top: 10, right: 30, bottom: 200, left: 150 },
-    width = 4000 - margin.left - margin.right,
+  let margin = { top: 10, right: 30, bottom: 200, left: 250 },
+    width = 1440 - margin.left - margin.right,
     height = 2500 - margin.top - margin.bottom;
 
+
+  const tagFilters = ['rebuyMatchColor','lightningDeal','julyfourthsale2023'];
   // Define scales
+
+  const allTagsArr = Array.from(
+    new Set( products.flatMap((product) => product.tags)) )
+      .sort()
+
+  const filterTags = allTagsArr.filter(tags => {
+    return tagFilters.some( d => {
+      return tags.includes(d);
+    });
+  });
   let x = d3
     .scalePoint()
     .range([0, width])
-    .domain(
-      Array.from(new Set(products.flatMap((product) => product.tags)))
-      .sort()
-    )
+    .domain(filterTags)
     .padding(0.5);
 
   let y = d3
@@ -76,7 +85,7 @@ function draw(products) {
     .selectAll("line")
     .style("stroke", "gray"); // Set gridline color
 
-  svg.selectAll("text").style("font-size", "9px"); // set font size
+  svg.selectAll("text").style("font-size", "12px"); // set font size
 
   // Extend Y axis
 
