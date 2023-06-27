@@ -27,23 +27,24 @@ fetch(url)
 
 function draw(products) {
   // Define SVG dimensions and margins
-  let margin = { top: 10, right: 30, bottom: 200, left: 100 },
-    width = 1000 - margin.left - margin.right,
+  let margin = { top: 10, right: 30, bottom: 200, left: 150 },
+    width = 4000 - margin.left - margin.right,
     height = 2500 - margin.top - margin.bottom;
 
   // Define scales
   let x = d3
     .scalePoint()
     .range([0, width])
-    .domain(products.map((product) => product.title))
+    .domain(
+      Array.from(new Set(products.flatMap((product) => product.tags)))
+      .sort()
+    )
     .padding(0.5);
 
   let y = d3
     .scalePoint()
     .range([height, 0])
-    .domain(
-      Array.from(new Set(products.flatMap((product) => product.tags)))
-      .sort()
+    .domain(products.map((product) => product.title)
     )
     .padding(1.5);
 
@@ -75,7 +76,7 @@ function draw(products) {
     .selectAll("line")
     .style("stroke", "gray"); // Set gridline color
 
-  svg.selectAll("text").style("font-size", "6px"); // set font size
+  svg.selectAll("text").style("font-size", "9px"); // set font size
 
   // Extend Y axis
 
@@ -89,8 +90,8 @@ function draw(products) {
         colorGroup.add(tag);
       }
       dataPoints.push({
-        x: product.title,
-        y: tag,
+        x: tag,
+        y: product.title,
       });
     });
   });
@@ -141,19 +142,19 @@ function draw(products) {
     .attr("cy", function (d) {
       return y(d.y);
     })
-    .attr("r", 4)
+    .attr("r", 8)
     .style("fill", (d) => {
-      if (d.y.includes("rebuyMatchColor")) {
+      if (d.x.includes("rebuyMatchColor")) {
         const newColor = d.y.split("-")[1];
 
         return "green" //myColor(newColor);
       }
-      if (d.y.includes("lightningDeal")) {
+      if (d.x.includes("lightningDeal")) {
         // console.log(d.x)
         return "red";
       }
-      if (d.y.includes("julyfourthsale2023")) {
-        productsDeal.push(d.x);
+      if (d.x.includes("julyfourthsale2023")) {
+        productsDeal.push(d.y);
         return "red";
       }
     })
@@ -161,7 +162,7 @@ function draw(products) {
       console.log(d)
       tooltip.transition().duration(200).style("opacity", 0.9);
       tooltip
-        .html("Product: " + d.x + "</br>" + "Tag:" + d.y)
+        .html("Product: " + d.y + "</br>" + "</br>" + "Tag:" + d.x)
         .style("left", d3.pointer(event, svg.node())[0] + 5 + "px")
         .style("top", d3.pointer(event, svg.node())[1] - 28 + "px");
     })
